@@ -1,0 +1,22 @@
+{
+  "name": "wordgame",
+  "version": "1.3.2018",
+  "description": "Sanapeli",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "coming"
+  },
+  "keywords": [
+    "sana",
+    "peli",
+    "words",
+    "fun"
+  ],
+  "author": "Toni & Riku",
+  "license": "ISC"
+}
