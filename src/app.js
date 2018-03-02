@@ -1,84 +1,45 @@
-//  Required npm-libraries:
-const http = require("http");
-const fs = require('fs');
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var game = require('./game');
 
-//const port = process.env.PORT;
-const port = 3000;
+var Game = new game.Game();
 
-/**
- * Creates http-server that handles GET and POST commands.
- *
- */
-const server = http.createServer((req, res) => {
-    if (req.method.toLocaleLowerCase() === 'get') {
-        if (req.url === '/') {
-            init(req, res);
-        } else {
-            let type = req.url.split('.')[1];
-            switch (type) {
-                case 'css':
-                    load(req, res, '.' + req.url, 'text/css');
-                    break;
-                case 'js':
-                    load(req, res, '.' + req.url, 'text/javascript');
-                    break;
-                case 'json':
-                    load(req, res, './data/weathers.json', 'application/json');
-                    break;
-                case 'png':
-                    load(req, res, '.' + req.url, 'image/png');
-                    break;
-                default:
-                    console.log("Unknown file format: " + type);
-            }
-        }
-    } else if (req.method.toLocaleLowerCase() === 'post') {
-        let body = '';
+var users = []
 
-        req.on('data', (data) => {
-            body += data;
-        });
-
-        req.on('end', () => {
-            let data = body.split('|');
-
-            if (data[0] == "add") saveData(JSON.parse(data[2]), data[1]);
-            else if (data[0] == "remove") removeData(JSON.parse(data[2]), data[1]);
-            else console.log("Unknown command: " + data[0]);
-        });
-
-        res.writeHead(200, {'Content-Type': 'text/html'});
-        res.end('Data received.');
-
+function removeUser(id) {
+    for(let i = 0; i < users.length; i++) {
+        if(users[i]['id'] == id) users.splice(i, 1);
     }
-}).listen(port, () => {
-    console.log("Server running at localhost:" + port);
+}
+function findUser(id) {
+    for(let i = 0; i < users.length; i++) {
+        if(users[i]['id'] == id) return true;
+    }
+    return false;
+}
+
+
+app.get('/', function(req, res){
+    res.sendFile(__dirname + '/index.html');
 });
 
+io.on('connection', function(socket){
+    socket.on('join', function(user) {
+        if(!findUser(socket.id)) {
+            console.log(user + ' joined!');
+            users.push({'user': user, 'id': socket.id});
+            io.emit('lobby-update', JSON.stringify(users));
+        }
+        else console.log("User has already joined");
+    });
+    socket.on('disconnect', function() {
+        removeUser(socket.id);
+        console.log(JSON.stringify(users));
+        io.emit('lobby-update', JSON.stringify(users));
+    });
+});
 
-/**
- * Loads file from given directory (url).
- * @param req Request: Received http-package.
- * @param res Respond: http-package, that will be sent back.
- * @param filename URL to wanted file.
- * @param type File type that is needed when sending data back to client.
- */
-function load (req, res, filename, type) {
-    if (req.method.toLocaleLowerCase() === "get") {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', type);
-        let file = fs.readFileSync(filename);
-        res.write(file);
-        res.end();
-    }
-    console.log("Loaded: " + filename);
-}
-
-/**
- * Sends html-file to client.
- * @param req Request: Received http-package.
- * @param res Respond: http-package, that will be sent back.
- */
-function init(req, res) {
-    load(req, res, './index.html', 'html');
-}
+http.listen(3000, function(){
+  console.log('listening on *:3000');
+});

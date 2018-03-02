@@ -18,5 +18,9 @@
     "fun"
   ],
   "author": "Toni & Riku",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.2",
+    "socket.io": "^2.0.4"
+  }
 }
