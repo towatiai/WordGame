@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WordGame</title>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+$(function () {
+    var socket = io();
+    $('form').submit(function() {
+        socket.emit('join', $("#username").val());
+        return false;
+    });
+    socket.on('lobby-update', function(msg) {
+        console.log("lobby update!");
+        users = JSON.parse(msg);
+        $('#user-list').empty();
+        for(let i = 0; i < users.length; i++) {
+            $('#user-list').append(
+                    $('<li>').text(users[i]['user'])
+            );
+        }
+        return false;
+    });
+});
+  
+</script>
+<body>
+<form>
+    <input id="username"/>
+    <button>Liity</button>
+</form>
+<ul id="user-list">
+</ul>
+</body>
+</html>
