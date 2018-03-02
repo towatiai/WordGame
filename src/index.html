@@ -15,15 +15,23 @@ $(function () {
     });
     socket.on('lobby-update', function(msg) {
         console.log("lobby update!");
-        users = JSON.parse(msg);
+        var users = JSON.parse(msg);
         $('#user-list').empty();
         for(let i = 0; i < users.length; i++) {
             $('#user-list').append(
-                    $('<li>').text(users[i]['user'])
+                $('<li>').attr('id', users[i].id).text(users[i].user).click(function(event) {
+                console.log('Challenge was sent!')
+                socket.emit('challenge', event.target.id);
+                return false;
+                })
             );
         }
         return false;
     });
+    socket.on('challenge-msg', function(msg) {
+        $('#challenge-message').text(msg);
+        return false;
+    })
 });
   
 </script>
@@ -34,5 +42,6 @@ $(function () {
 </form>
 <ul id="user-list">
 </ul>
+<p id="challenge-message"></p>
 </body>
 </html>

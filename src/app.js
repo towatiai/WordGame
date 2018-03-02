@@ -26,6 +26,7 @@ io.on('connection', function(socket){
         if(!findUser(socket.id)) {
             console.log(user + ' joined!');
             users.push({'user': user, 'id': socket.id});
+            console.log(JSON.stringify(users));
             io.emit('lobby-update', JSON.stringify(users));
         }
         else console.log("User has already joined");
@@ -35,6 +36,12 @@ io.on('connection', function(socket){
         console.log(JSON.stringify(users));
         io.emit('lobby-update', JSON.stringify(users));
     });
+    socket.on('challenge', function(msg) {
+        console.log("Challenge recieved, to; " + msg);
+        if(io.sockets.connected[msg]) {
+            io.sockets.connected[msg].emit('challenge-msg', 'You were challenged!');
+        }
+    })
 });
 
 http.listen(3000, function(){
