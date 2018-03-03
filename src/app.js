@@ -1,28 +1,29 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var game = require('./game');
+let express = require('express');
+let app = express();
+let http = require('http').Server(app);
+let io = require('socket.io')(http);
+let path = require('path');
+//var game = require('./game');
 
-var Game = new game.Game();
+app.use(express.static('client'));
 
-var users = []
+
+
+//var Game = new game.Game();
+
+var users = [];
 
 function removeUser(id) {
     for(let i = 0; i < users.length; i++) {
-        if(users[i]['id'] == id) users.splice(i, 1);
+        if(users[i]['id'] === id) users.splice(i, 1);
     }
 }
 function findUser(id) {
     for(let i = 0; i < users.length; i++) {
-        if(users[i]['id'] == id) return true;
+        if(users[i]['id'] === id) return true;
     }
     return false;
 }
-
-
-app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html');
-});
 
 io.on('connection', function(socket){
     socket.on('join', function(user) {
