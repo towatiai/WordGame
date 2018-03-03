@@ -36,7 +36,7 @@ function getUsername(id) {
 
 // Check wheter a user can be challenged
 function canBeChallenged(id) {
-    for(let i = 0; i < challenges.length(); i++) {
+    for(let i = 0; i < challenges.length; i++) {
         if(challenges[i].recipient == id) return false;
     }
     return true;
@@ -44,7 +44,7 @@ function canBeChallenged(id) {
 
 // Check wheter a user can challenge
 function canChallenge(id) {
-    for(let i = 0; i < users.length(); i++) {
+    for(let i = 0; i < challenges.length; i++) {
         if(challenges[i].sender == id) return false;
     }
     return true;
@@ -64,7 +64,7 @@ io.on('connection', function(socket){
             console.log(user + ' joined!');
             // Add user to users list
             users.push({'user': user, 'id': socket.id});
-            console.log(JSON.stringify(users));
+            console.log('Users:' + JSON.stringify(users));
             // Send update message to clients
             io.emit('lobby-update', JSON.stringify(users));
         }
@@ -74,7 +74,7 @@ io.on('connection', function(socket){
     socket.on('disconnect', function() {
         // Remove the user from users list
         removeUser(socket.id);
-        console.log(JSON.stringify(users));
+        console.log('users:' + JSON.stringify(users));
         // Send update message to clients
         io.emit('lobby-update', JSON.stringify(users));
     });
@@ -100,16 +100,17 @@ io.on('connection', function(socket){
         }
     });
     // When a user responds to a challenge
-    socket.on('challenge-response', function(msg) {
-        console.log("Challenge response");
+    socket.on('challenge-response', function(resp) {
+        resp = JSON.parse(resp);
+        console.log("Challenge response: " + resp.response);
         // Challange is accepted
-        if(msg.response == 'y') {
+        if(resp.response == 'y') {
             // create game
         }
         // Challenge is rejected
         else {
-            if(io.sockets.connected[msg.sender]) {
-                io.sockets.connected[msg.sender].emit('challenge-fail', msg);
+            if(io.sockets.connected[resp.sender]) {
+                io.sockets.connected[resp.sender].emit('challenge-fail', resp);
             }
         }
     });
