@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WordGame</title>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+$(function () {
+    var socket = io();
+    $('form').submit(function() {
+        socket.emit('join', $("#username").val());
+        return false;
+    });
+    socket.on('lobby-update', function(msg) {
+        console.log("lobby update!");
+        var users = JSON.parse(msg);
+        $('#user-list').empty();
+        for(let i = 0; i < users.length; i++) {
+            $('#user-list').append(
+                $('<li>').attr('id', users[i].id).text(users[i].user).click(function(event) {
+                console.log('Challenge was sent!')
+                socket.emit('challenge', event.target.id);
+                return false;
+                })
+            );
+        }
+        return false;
+    });
+    socket.on('challenge-msg', function(msg) {
+        var data = JSON.parse(msg);
+        $('#challenge-message').text("You were challenged by: " + data.sender);
+        return false;
+    });
+});
+  
+</script>
+<body>
+<form>
+    <input id="username"/>
+    <button>Liity</button>
+</form>
+<ul id="user-list">
+</ul>
+<p id="challenge-message"></p>
+</body>
+</html>
