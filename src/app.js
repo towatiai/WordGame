@@ -80,7 +80,7 @@ io.on('connection', function(socket){
     });
     // When a user challenges another user
     socket.on('challenge', function(recipient) {
-        console.log( socketd.id + " challenged : " + recipient);
+        console.log( socket.id + " challenged : " + recipient);
         // Create new challenge
         challenge = game.Challenge(lastCid++, socket.id, recipient)
         // Notify challenger is recipient can't be challenged
