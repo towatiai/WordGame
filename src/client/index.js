@@ -10,6 +10,8 @@ let TILE_COUNT = 10;
 let BOARD_W = 17;
 let BOARD_H = 17;
 let BOARD = [];
+
+let PLAYER;
 let GAME;
 let LOBBY;
 let CONNECTION;
@@ -19,10 +21,11 @@ let LETTERBOX_COLOR = "0x" + "bf8200";
 
 
 $(() => {
-    let game = new Game();
-    //let player = new Player();
-    LOBBY = new Lobby();
-    CONNECTION = new Connection();
+    new Game();
+    /*LOBBY = new Lobby();
+    CONNECTION = new Connection();*/
+    new Board();
+    LOBBY.removeLogin();
 
 
     /*let board = new Board();*/
@@ -44,8 +47,6 @@ class Game {
         GAME = new PIXI.Application({width: CANVAS_W, height: CANVAS_H});
         GAME.renderer.backgroundColor = 0xFFFFFF;
         document.getElementById('container').appendChild(GAME.view);
-
-
     }
 }
 
@@ -101,10 +102,10 @@ class Board {
 
         for ( let i = 0; i < this.letters.length; i++ ) {
             let tile = new Tile( i * ( TILE_W + 2 ) + 4, 4, TILE_W, TILE_H, this.letters[i] );
-            container.addChild(tile.tile);
+            this.letterbox.addChild(tile.tile);
         }
 
-        GAME.stage.addChild(container);
+        GAME.stage.addChild(this.letterbox);
     }
 }
 
@@ -120,30 +121,58 @@ class Connection {
         this.socket.on('lobby-update', function(msg) {
             console.log("lobby update!");
             let users = JSON.parse(msg);
-            console.log(users);
             LOBBY.empty();
             for(let i = 0; i < users.length; i++) {
-                LOBBY.addUser(users[i].user, users[i].id).draw(i);
+                if (PLAYER !== undefined && users[i].user === PLAYER.name) {
+                    PLAYER.id = users[i].id;
+                    continue;
+                }
+                LOBBY.addUser(users[i].user, users[i].id, false);
             }
+            LOBBY.draw();
             return false;
         });
 
         this.socket.on('challenge-msg', function(msg) {
-            var data = JSON.parse(msg);
-            console.log("Challenge recieved!");
-            LOBBY.challenge
+            let data = JSON.parse(msg);
+            console.log("Challenge received!");
+            LOBBY.challenge(data);
+            return false;
+        });
+
+        this.socket.on('challenge-fail', function(msg) {
+            let data = JSON.parse(msg);
+            console.log("Challenge response!");
+            LOBBY.challenge(data);
             return false;
         });
 
         $('#join').click(function(event) {
-            console.log('moi');
-            CONNECTION.socket.emit('join', $("#username").val());
+            let username = $("#username").val();
+
+            PLAYER = new User(username, null, true);
+            PLAYER.draw();
+            CONNECTION.socket.emit('join', username);
             LOBBY.removeLogin();
             return false;
         });
     }
 
+    challengeSend(id) {
+        console.log('Challenge was sent to: ' + id);
+        CONNECTION.socket.emit('challenge', id);
+        return false;
+    }
 
+    challengeResponse(YorN, sender) {
+        CONNECTION.socket.emit('challenge-response', JSON.stringify(
+            {
+                'response': YorN,
+                'sender': sender
+            }
+        ));
+        return false;
+    }
 
 }
 
@@ -155,8 +184,8 @@ class Lobby {
         this.users = [];
     }
 
-    addUser(name, id) {
-        let user = new User(name, id);
+    addUser(name, id, isPlayer) {
+        let user = new User(name, id, isPlayer);
         this.users.push(user);
         return user;
     }
@@ -173,51 +202,113 @@ class Lobby {
     }
 
     empty() {
-        this.users.map((user) => {
-           user.container.destroy();
+        for (let i = 0; i < this.users.length; i++) {
+            if (this.users[i].isPlayer) continue;
+            this.users[i].userContainer.destroy();
+            this.users.splice(i, 1);
+            i--;
+        }
+    }
+
+    challenge(data) {
+        let challengeText = "You were challenged by: " + this.nameFromID(data.sender);
+        console.log(challengeText);
+        createContainer(100, 400, 0, 50,
+            challengeText);
+        let accept = createContainer(120, 500, 0, 50, "ACCEPT!");
+        let reject = createContainer(320, 500, 0, 50, "REJECT");
+
+        accept.interactive = true;
+        accept.buttonMode = true;
+
+        accept.on('pointerdown', function(e) {
+            CONNECTION.challengeResponse('y', data.sender);
         });
+
+        reject.interactive = true;
+        reject.buttonMode = true;
+
+        reject.on('pointerdown', function(e) {
+            CONNECTION.challengeResponse('n', data.sender);
+        });
+    }
+
+    nameFromID (id) {
+        for (let i = 0; i < this.users.length; i++) {
+            if (this.users[i].id === id) {
+                return this.users[i].name;
+            }
+        }
+    }
+
+    draw() {
+        for ( let i = 0; i < this.users.length; i++) {
+            this.users[i].draw(i);
+        }
     }
 }
 
 
 class User {
 
-    constructor(user, id) {
+    constructor(user, id, isPlayer) {
         this.name = user;
         this.id = id;
+        this.isPlayer = isPlayer;
 
         console.log(user);
     }
 
     draw(index) {
-        this.container = new PIXI.Sprite();
-        this.container.x = 200;
-        this.container.y = index * (TILE_H + 1) + 150;
+        if (this.isPlayer) {
+            console.log("drawing player");
+            this.userContainer = createContainer(200, 100, 200, TILE_H, this.name);
+            return;
+        }
 
-        let background = new PIXI.Graphics();
-        background.beginFill(TILE_COLOR);
-        background.drawRect(0, 0, 200, TILE_H);
-        background.endFill();
-        this.container.addChild(background);
+        this.userContainer = createContainer(200,
+                        index * (TILE_H + 1) + 150,
+                        200, TILE_H, this.name);
 
-        let username = new PIXI.Text(this.name);
-        username.anchor.y = 0.5;
-        username.y = TILE_H / 2;
-        username.x = 5;
-        this.container.addChild(username);
-
-        GAME.stage.addChild(this.container);
-
-        this.container.interactive = true;
-        this.container.buttonMode = true;
+        this.userContainer.interactive = true;
+        this.userContainer.buttonMode = true;
 
         let id = this.id;
 
-        this.container.on('pointerdown', function(e) {
-            console.log('Challenge was sent to: ' + id);
-            CONNECTION.socket.emit('challenge', id);
-            return false;
+        this.userContainer.on('pointerdown', function(e) {
+            CONNECTION.challengeSend(id);
         });
     }
+}
+
+
+
+
+
+function createContainer(x, y, w, h, text) {
+    this.container = new PIXI.Sprite();
+    this.container.x = x;
+    this.container.y = y;
+
+    let username = new PIXI.Text(text);
+
+    let background = new PIXI.Graphics();
+    background.beginFill(TILE_COLOR);
+
+    if (username.width > w)
+        background.drawRect(0, 0, username.width + 20, h);
+    else background.drawRect(0, 0, w, h);
+    background.endFill();
+    this.container.addChild(background);
+
+    username.anchor.y = 0.5;
+    username.y = background.height / 2;
+    username.x = 5;
+
+    this.container.addChild(username);
+
+    GAME.stage.addChild(this.container);
+
+    return this.container;
 }
 
