@@ -8,16 +8,22 @@ var users = []
 // Remove user by id
 function removeUser(id) {
     for(let i = 0; i < users.length; i++) {
-        if(users[i]['id'] == id) users.splice(i, 1);
+        if(users[i].id == id) users.splice(i, 1);
     }
 }
 
 // Find wheter user with specified id exists
 function findUser(id) {
     for(let i = 0; i < users.length; i++) {
-        if(users[i]['id'] == id) return true;
+        if(users[i].id == id) return true;
     }
     return false;
+}
+// Get username by id
+function getUsername(id) {
+    for(let i = 0; i < users.length; i++) {
+        if(users[i].id == id) return users[i].user;
+    }
 }
 
 // Serve the html page
@@ -49,12 +55,26 @@ io.on('connection', function(socket){
     });
     // When a user challenges another user
     socket.on('challenge', function(msg) {
-        console.log("Challenge recieved, to; " + msg);
+        console.log("Challenge recieved, to: " + msg);
         // Send challenge to the user whom it concerns
         if(io.sockets.connected[msg]) {
-            io.sockets.connected[msg].emit('challenge-msg', 'You were challenged!');
+            io.sockets.connected[msg].emit('challenge-msg', JSON.stringify({'sender': socket.id, 'recipient': msg}));
         }
-    })
+    });
+    // When a user responds to a challenge
+    socket.on('challenge-response', function(msg) {
+        console.log("Challenge response");
+        // Challange is accepted
+        if(msg.response == 'y') {
+            // create game
+        }
+        // Challenge is rejected
+        else {
+            if(io.sockets.connected[msg.sender]) {
+                io.sockets.connected[msg.sender].emit('challenge-rejected', msg);
+            }
+        }
+    });
 });
 
 http.listen(3000, function(){

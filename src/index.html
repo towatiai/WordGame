@@ -29,7 +29,8 @@ $(function () {
         return false;
     });
     socket.on('challenge-msg', function(msg) {
-        $('#challenge-message').text(msg);
+        var data = JSON.parse(msg);
+        $('#challenge-message').text("You were challenged by: " + data.sender);
         return false;
     })
 });
