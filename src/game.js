@@ -1,7 +1,7 @@
-exports.Challenge = function(id, sender, recipent) {
+exports.Challenge = function(id, sender, recipient) {
     this.id = id;
     this.sender = sender;
-    this.recipent = recipent;
+    this.recipient = recipient;
 }
 
 function Board(size) {
@@ -14,7 +14,8 @@ function Board(size) {
     }
 }
 
-function Player() {
+function Player(id) {
+    this.id = id;
     this.score = 0;
     this.letters = [];
 }
