@@ -20,7 +20,9 @@ function Player(id) {
     this.letters = [];
 }
 
-exports.Game = function() {
+exports.Game = function(player1, player2) {
+    this.player1 = new Player(player1);
+    this.player2 = new Player(player2);
     this.board = new Board(17);
     this.letters = []; // put letters here
 }

@@ -135,7 +135,7 @@ io.on('connection', function(socket){
         }
         // Challenge is rejected
         else {
-            io.sockets.connected[resp.sender].emit('challenge-fail', resp);
+            io.sockets.connected[resp.sender].emit('challenge-fail', JSON.stringify({'reason': 'reject', 'recipient': socket.id}));
         }
         // Challenge expires
         removeChallenge(resp.sender, socket.id);
