@@ -5,11 +5,11 @@ let io = require('socket.io')(http);
 var game = require('./game');
 
 // Connceted users
-var users = []
+var users = [];
 // Last challenge id
 var lastCid = 0;
 // Active challenges
-var challenges = []
+var challenges = [];
 
 app.use(express.static('client'));
 
