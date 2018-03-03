@@ -22,10 +22,10 @@ let LETTERBOX_COLOR = "0x" + "bf8200";
 
 $(() => {
     new Game();
-    /*LOBBY = new Lobby();
-    CONNECTION = new Connection();*/
-    new Board();
-    LOBBY.removeLogin();
+    LOBBY = new Lobby();
+    CONNECTION = new Connection();
+    /*new Board();
+    LOBBY.removeLogin();*/
 
 
     /*let board = new Board();*/
