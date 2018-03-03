@@ -1,4 +1,5 @@
-exports.Challenge = function(sender, recipent) {
+exports.Challenge = function(id, sender, recipent) {
+    this.id = id;
     this.sender = sender;
     this.recipent = recipent;
 }
