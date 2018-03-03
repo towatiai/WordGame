@@ -29,12 +29,10 @@ let BOARD_Y = 0;
 
 $(() => {
     new Game();
-    /*LOBBY = new Lobby();
-    CONNECTION = new Connection();*/
-    BOARD = new Board();
+    LOBBY = new Lobby();
+    CONNECTION = new Connection();
+    //BOARD = new Board();
 
-
-    /*let board = new Board();*/
 });
 
 
@@ -168,7 +166,10 @@ class Lobby {
     challengeFail(data) {
         let infoText = "Challenge failed!";
 
-        if (data.reason === 'busy') infoText = 
+        if (data.reason === 'busy') infoText = LOBBY.nameFromID(data.recipient) + " is busy right now.";
+        if (data.reason === 'limit') infoText = "You can challenge only one player at a time.";
+        if (data.reason === 'disconnect') infoText = LOBBY.nameFromID(data.recipient) + ' has disconnected.';
+        if (data.reason === 'reject') infoText = LOBBY.nameFromID(data.recipient) + " has rejected your challenge.";
 
         let info = createContainer(100, 400, 0, 50, infoText);
         let ok = createContainer(120, 500, 0, 50, "OK");
