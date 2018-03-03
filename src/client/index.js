@@ -12,6 +12,7 @@ let BOARD_H = 17;
 let BOARD = [];
 let GAME;
 let LOBBY;
+let CONNECTION;
 
 let TILE_COLOR = "0x" + "ffd67d";
 let LETTERBOX_COLOR = "0x" + "bf8200";
@@ -21,7 +22,7 @@ $(() => {
     let game = new Game();
     //let player = new Player();
     LOBBY = new Lobby();
-    let connection = new Connection();
+    CONNECTION = new Connection();
 
 
     /*let board = new Board();*/
@@ -114,9 +115,9 @@ class Connection {
 
     constructor() {
 
-        let socket = io();
+        this.socket = io();
 
-        socket.on('lobby-update', function(msg) {
+        this.socket.on('lobby-update', function(msg) {
             console.log("lobby update!");
             let users = JSON.parse(msg);
             console.log(users);
@@ -127,13 +128,22 @@ class Connection {
             return false;
         });
 
+        this.socket.on('challenge-msg', function(msg) {
+            var data = JSON.parse(msg);
+            console.log("Challenge recieved!");
+            LOBBY.challenge
+            return false;
+        });
+
         $('#join').click(function(event) {
             console.log('moi');
-            socket.emit('join', $("#username").val());
+            CONNECTION.socket.emit('join', $("#username").val());
             LOBBY.removeLogin();
             return false;
         });
     }
+
+
 
 }
 
@@ -198,12 +208,15 @@ class User {
 
         GAME.stage.addChild(this.container);
 
-
-        // TODO: Haasto serverijuttu!!
         this.container.interactive = true;
         this.container.buttonMode = true;
+
+        let id = this.id;
+
         this.container.on('pointerdown', function(e) {
-            console.log('click!');
+            console.log('Challenge was sent to: ' + id);
+            CONNECTION.socket.emit('challenge', id);
+            return false;
         });
     }
 }
