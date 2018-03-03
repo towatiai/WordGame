@@ -1,9 +1,14 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var game = require('./game');
 
 // Connceted users
 var users = []
+// Last challenge id
+var lastCid = 0;
+// Active challenges
+var challenges = []
 
 // Remove user by id
 function removeUser(id) {
@@ -56,6 +61,8 @@ io.on('connection', function(socket){
     // When a user challenges another user
     socket.on('challenge', function(msg) {
         console.log("Challenge recieved, to: " + msg);
+        // Create new challenge
+        challenges.push(game.Challenge(lastCid++, socket.id, msg));
         // Send challenge to the user whom it concerns
         if(io.sockets.connected[msg]) {
             io.sockets.connected[msg].emit('challenge-msg', JSON.stringify({'sender': socket.id, 'recipient': msg}));
