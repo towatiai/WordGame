@@ -21,16 +21,14 @@ let LETTERBOX_COLOR = "0x" + "bf8200";
 
 
 $(() => {
-    new Game();
+    /*new Game();
     LOBBY = new Lobby();
-    CONNECTION = new Connection();
-    /*new Board();
-    LOBBY.removeLogin();*/
+    CONNECTION = new Connection();*/
+    new Board();
 
 
     /*let board = new Board();*/
 });
-
 
 
 
@@ -160,12 +158,12 @@ class Connection {
 
     challengeSend(id) {
         console.log('Challenge was sent to: ' + id);
-        CONNECTION.socket.emit('challenge', id);
+        this.socket.emit('challenge', id);
         return false;
     }
 
     challengeResponse(YorN, sender) {
-        CONNECTION.socket.emit('challenge-response', JSON.stringify(
+        this.socket.emit('challenge-response', JSON.stringify(
             {
                 'response': YorN,
                 'sender': sender
@@ -212,9 +210,7 @@ class Lobby {
 
     challenge(data) {
         let challengeText = "You were challenged by: " + this.nameFromID(data.sender);
-        console.log(challengeText);
-        createContainer(100, 400, 0, 50,
-            challengeText);
+        let challenge = createContainer(100, 400, 0, 50, challengeText);
         let accept = createContainer(120, 500, 0, 50, "ACCEPT!");
         let reject = createContainer(320, 500, 0, 50, "REJECT");
 
@@ -223,6 +219,9 @@ class Lobby {
 
         accept.on('pointerdown', function(e) {
             CONNECTION.challengeResponse('y', data.sender);
+            challenge.destroy();
+            accept.destroy();
+            reject.destroy();
         });
 
         reject.interactive = true;
@@ -230,6 +229,9 @@ class Lobby {
 
         reject.on('pointerdown', function(e) {
             CONNECTION.challengeResponse('n', data.sender);
+            challenge.destroy();
+            accept.destroy();
+            reject.destroy();
         });
     }
 

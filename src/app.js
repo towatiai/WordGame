@@ -5,11 +5,11 @@ let io = require('socket.io')(http);
 var game = require('./game');
 
 // Connceted users
-var users = []
+var users = [];
 // Last challenge id
 var lastCid = 0;
 // Active challenges
-var challenges = []
+var challenges = [];
 
 app.use(express.static('client'));
 
@@ -36,7 +36,7 @@ function getUsername(id) {
 
 // Check wheter a user can be challenged
 function canBeChallenged(id) {
-    for(let i = 0; i < challenges.length(); i++) {
+    for(let i = 0; i < challenges.length; i++) {
         if(challenges[i].recipient == id) return false;
     }
     return true;
@@ -44,7 +44,7 @@ function canBeChallenged(id) {
 
 // Check wheter a user can challenge
 function canChallenge(id) {
-    for(let i = 0; i < users.length(); i++) {
+    for(let i = 0; i < users.length; i++) {
         if(challenges[i].sender == id) return false;
     }
     return true;
