@@ -1,6 +1,7 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+let express = require('express');
+let app = express();
+let http = require('http').Server(app);
+let io = require('socket.io')(http);
 var game = require('./game');
 
 // Connceted users
@@ -10,10 +11,12 @@ var lastCid = 0;
 // Active challenges
 var challenges = []
 
+app.use(express.static('client'));
+
 // Remove user by id
 function removeUser(id) {
     for(let i = 0; i < users.length; i++) {
-        if(users[i].id == id) users.splice(i, 1);
+        if(users[i]['id'] === id) users.splice(i, 1);
     }
 }
 
@@ -30,6 +33,7 @@ function getUsername(id) {
         if(users[i].id == id) return users[i].user;
     }
 }
+
 
 // Serve the html page
 app.get('/', function(req, res){

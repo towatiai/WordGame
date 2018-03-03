@@ -1,0 +1,13 @@
+#container {
+    position: relative;
+}
+
+#controls {
+    top: 10px;
+    left: 200px;
+    position: absolute;
+}
+
+p {
+    margin-bottom: 2px;
+}
