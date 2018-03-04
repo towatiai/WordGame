@@ -57,10 +57,17 @@ function getChallenger(id) {
     return false;
 }
 
+function isChallenger(id) {
+    for(let i = 0; i < challenges.length; i++) {
+        if(challenges[i].sender == id) return true;
+    }
+    return false;
+}
+
 // Removes challenge
 function removeChallenge(sender, recipient) {
     for(let i = 0; i < challenges.length; i++) {
-        if(challenges[i].sender == sender && challenges[i].recipient == recipient) challenges.splice(i, 1);
+        if(challenges[i].sender == sender || challenges[i].recipient == recipient) challenges.splice(i, 1);
     }
 }
 
@@ -90,7 +97,7 @@ io.on('connection', function(socket){
         removeUser(socket.id);
         console.log(socket.id + " disconnected");
         console.log('users:' + JSON.stringify(users));
-        // If user was challenged, notify the challenger
+        // If the user was challenged, notify the challenger
         if(getChallenger(socket.id)) {
             let challenger = getChallenger(socket.id);
             io.sockets.connected[challenger].emit('challenge-fail',
@@ -98,6 +105,10 @@ io.on('connection', function(socket){
             removeChallenge(challenger, socket.id);
             console.log('Active challenges: ' + JSON.stringify(challenges));
             console.log('Challenge from ' + challenger + ' to ' + socket.id + ' removed');
+        }
+        // If the user has challenged someone, remove the challenge
+        if(isChallenger(socket.id)) {
+            removeChallenge(socket.id, 'somebody');
         }
         // Send update message to clients
         io.emit('lobby-update', JSON.stringify(users));
@@ -110,13 +121,15 @@ io.on('connection', function(socket){
         console.log("Challenge: " + JSON.stringify(challenge));
         // Notify challenger is recipient can't be challenged
         if(!canBeChallenged(recipient)) {
-            io.sockets.connected[socket.id].emit('challenge-fail',
-                JSON.stringify({'reason': 'busy', 'recipient': recipient}));
+            if(io.sockets.connected[socket.id]) {
+                io.sockets.connected[socket.id].emit('challenge-fail', JSON.stringify({'reason': 'busy', 'recipient': recipient}));
+            }
         }
         // Challenge fails if user has already challenged somebody
         if(!canChallenge(socket.id)) {
-            io.sockets.connected[socket.id].emit('challenge-fail',
-                JSON.stringify({'reason': 'limit', 'recipient': recipient}));
+            if(io.sockets.connected[socket.id]) {
+                io.sockets.connected[socket.id].emit('challenge-fail', JSON.stringify({'reason': 'limit', 'recipient': recipient}));
+            }
         }
         else {
             challenges.push(challenge);
@@ -135,7 +148,9 @@ io.on('connection', function(socket){
         }
         // Challenge is rejected
         else {
-            io.sockets.connected[resp.sender].emit('challenge-fail', JSON.stringify({'reason': 'reject', 'recipient': socket.id}));
+            if(io.sockets.connected[resp.sender]) {
+                io.sockets.connected[resp.sender].emit('challenge-fail', JSON.stringify({'reason': 'reject', 'recipient': socket.id}));
+            }
         }
         // Challenge expires
         removeChallenge(resp.sender, socket.id);
