@@ -1,4 +1,4 @@
-exports.Challenge = function(id, sender, recipient) {
+Challenge = function(id, sender, recipient) {
     this.id = id;
     this.sender = sender;
     this.recipient = recipient;
@@ -28,7 +28,7 @@ Player.prototype.addLetter = function(letter) {
 
 var GameStates = Object.freeze({"P1": 1, "P2": 2, "OVER": 3});
 
-exports.Game = function(player1, player2, numOfLetters) {
+Game = function(player1, player2, numOfLetters) {
     this.player1 = new Player(player1);
     this.player2 = new Player(player2);
     this.numOfLetters = numOfLetters;
@@ -38,7 +38,7 @@ exports.Game = function(player1, player2, numOfLetters) {
     this.state = GameStates.P1;
 }
 
-exports.Game.prototype.giveLetters = function(player, amount) {
+Game.prototype.giveLetters = function(player, amount) {
     for(let i = 0; i < amount; i++) {
         let rn = Math.floor(Math.random() * this.letters.length);
         player.addLetter(this.letters[rn]);
@@ -46,11 +46,15 @@ exports.Game.prototype.giveLetters = function(player, amount) {
     }
 }
 
-exports.Game.prototype.giveStartLetters = function() {
+Game.prototype.giveStartLetters = function() {
     this.giveLetters(this.player1, this.numOfLetters);
     this.giveLetters(this.player2, this.numOfLetters);
 }
 
+module.exports = {
+    Game: Game,
+    Challenge: Challenge
+} 
 
 
 
