@@ -37,7 +37,7 @@ function getUsername(id) {
 // Check wheter a user can be challenged
 function canBeChallenged(id) {
     for(let i = 0; i < challenges.length; i++) {
-        if(challenges[i].recipient == id) return false;
+        if(challenges[i].recipient == id || challenges[i].sender == id) return false;
     }
     return true;
 }
