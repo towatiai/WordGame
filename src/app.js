@@ -126,7 +126,7 @@ io.on('connection', function(socket){
             }
         }
         // Challenge fails if user has already challenged somebody
-        if(!canChallenge(socket.id)) {
+        else if(!canChallenge(socket.id)) {
             if(io.sockets.connected[socket.id]) {
                 io.sockets.connected[socket.id].emit('challenge-fail', JSON.stringify({'reason': 'limit', 'recipient': recipient}));
             }
